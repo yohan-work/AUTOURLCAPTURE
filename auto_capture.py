@@ -23,7 +23,7 @@ driver.set_window_size(1920, 1080)
 
 # 캡처할 URL 목록
 urls = [
-    'https://www.google.com/',
+    '',
     # ... 추가 URL ...
 ]
 
@@ -32,11 +32,21 @@ for i, url in enumerate(urls):
     driver.get(url)
     time.sleep(2)  # 페이지 로드 대기 (필요에 따라 조정)
 
-    # 전체 페이지 높이 가져오기
-    total_height = driver.execute_script("return document.body.scrollHeight")
-    driver.set_window_size(1920, total_height)  # 전체 페이지 높이로 창 크기 설정
+    # <h2 class="tit01"> 요소의 텍스트 가져오기
+    try:
+        title_element = driver.find_element(By.CSS_SELECTOR, 'h2.tit01')
+        title_text = title_element.text
+        # 파일 이름에 사용할 수 없는 문자를 대체
+        title_text = title_text.replace(' ', '_').replace('/', '_')
+    except Exception as e:
+        print(f'Error finding title on {url}: {e}')
+        title_text = f'screenshot_{i+1}'
 
-    screenshot_path = f'screenshot_{i+1}.png'
+    # 페이지의 실제 콘텐츠 높이 가져오기
+    total_height = driver.execute_script("return Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);")
+    driver.set_window_size(1920, total_height)  # 콘텐츠 높이에 맞춰 창 크기 설정
+
+    screenshot_path = f'{title_text}.jpg'
     driver.save_screenshot(screenshot_path)
     print(f'Screenshot saved: {screenshot_path}')
 
